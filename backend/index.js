@@ -1,0 +1,62 @@
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
+import { connectDB } from './config/connectDB.js';
+dotenv.config();
+
+import userRoutes from "./routes/user.routes.js";
+import sellerRoutes from "./routes/seller.routes.js";
+import productRoutes from "./routes/product.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
+import orderRoutes from "./routes/order.routes.js";
+import addressRoutes from "./routes/address.routes.js"
+import { connectCloudinary } from './config/cloudinary.js';
+import { stripeWebhooks } from './controllers/order.controller.js';
+const app = express();
+
+await connectDB();
+await connectCloudinary();
+
+
+
+
+
+const allowedOrigins = [ "https://new-ecommerce-blue.vercel.app", "https://statuesque-bublanina-e0b5db.netlify.app", "http://localhost:5173"];
+
+
+
+
+app.use(cors({origin : allowedOrigins, credentials: true}));
+
+app.post('/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
+//middlewares
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+
+//api Endpointes
+
+app.get('/', (req, res) => res.send("API is Working"));
+app.use("/images", express.static("uploads"));
+app.use("/api/user", userRoutes);
+app.use("/api/seller", sellerRoutes);
+app.use("/api/product", productRoutes); 
+app.use("/api/cart", cartRoutes); 
+app.use("/api/order", orderRoutes); 
+app.use("/api/address", addressRoutes); 
+
+const PORT=process.env.PORT || 4000;
+
+app.listen(PORT, ()=> {
+  console.log(`Server is runnig on ${PORT}`);
+
+});
+
+
+
+
+
+
+
+
